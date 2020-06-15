@@ -6,6 +6,8 @@ all:
 
 install:
 	cp autothrottle /usr/local/bin/
+	cp -n autothrottle.conf /etc/
 
 clean:
 	rm autothrottle
+

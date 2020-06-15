@@ -38,7 +38,7 @@ int readConfig(SConfig *config) {
     strcpy((char*)config->maxCpuFreqPath, (const char*)"/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq");
     strcpy((char*)config->CSVPath, (const char*)"/tmp/autothrottle.csv");
 
-    fd = fopen("/home/d3da/dev/autothrottle/autothrottle.conf", "r");
+    fd = fopen("/etc/autothrottle.conf", "r");
     if (fd == NULL) {
             syslog(LOG_WARNING, "failed to open autothrottle configuration, using defaults");
             return 0;
