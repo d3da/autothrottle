@@ -15,4 +15,11 @@ typedef struct {
 typedef struct {
     long long I;
     unsigned int P;
+    /* TODO allow configuring PID controller parameters without recompiling 
+    double kP;
+    double kI;
+    double kD;
+    double kA;
+    */
+    /* new_freq = old_freq + kA* (P*kP + I*kI + D*kD); */
 } PID;

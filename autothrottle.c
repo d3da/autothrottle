@@ -87,9 +87,9 @@ unsigned int getTargetCpuFreq(unsigned int temp, unsigned int currFreq) {
      * Currently P-controller, should be tweaked PID-controller eventually
      */
     long P = (long) ((long)temp - (long)config.targetTemp);
-    double kP = 69;
-    double kI = 0.05;
-    double kD = 500000;
+    double kP = 50;
+    double kI = 0.02;
+    double kD = 250000;
     double kA = 0.2;
     double derivative = (double) ((int)temp - (int)pid_c.P) / (int)config.pollingDelay;
 
@@ -142,12 +142,10 @@ void sighandler(int sig) {
         return;
     }
 }
-    
 
-
+int daemonMode = 1;
 int main(int argc, char** argv) {
 
-    int daemonMode = 1;
 
     if (getuid() != 0 || getgid() != 0) {
         fprintf(stderr, "autothrottle should be run as root\n");
