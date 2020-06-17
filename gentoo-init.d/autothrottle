@@ -1,0 +1,9 @@
+#!/sbin/openrc-run
+# Copyright 2020 Gentoo Authors
+# Distributed under the terms of the GNU General Public License v2
+
+name="autothrottle daemon"
+description="daemon that reduces the maximum cpu frequency to avoid overheating by d3da"
+command=/usr/local/bin/autothrottle
+command_args="${autothrottle_args}"
+
