@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -I.
+CFLAGS=-g -I. -Wall
 
 all:
 	$(CC) -o autothrottle autothrottle.c config.c $(CFLAGS)
