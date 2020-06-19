@@ -1,15 +1,23 @@
 #define M_PATH 512
 
 typedef struct {
+    int * numCPUs;
+    char * paths[M_PATH + 1];
+} path_array;
+
+typedef struct {
     unsigned int maxMaxFreq;
     unsigned int minMaxFreq;
     unsigned int pollingDelay;
-    unsigned char thermalTempPath[M_PATH];
-    unsigned char maxCpuFreqPath[M_PATH];
+    char thermalTempPath[M_PATH];
+    char maxCpuFreqPath[M_PATH];
     unsigned int targetTemp;
     unsigned int verbosity;
     int writeCSV;
-    unsigned char CSVPath[M_PATH];
+    int numCPUs;
+    char CSVPath[M_PATH];
+    path_array * path_arr;
+
 } SConfig;
 
 typedef struct {
