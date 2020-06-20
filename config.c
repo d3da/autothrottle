@@ -12,25 +12,6 @@ void stripPath(char * path) {
 }
 
 
-void setPaths(int * numCPUs, char * path_format, path_array * p_a) {
-    char ** ptr = NULL;
-    printf("SETTING PATHS\n");
-    //*p_a->numCPUs = *numCPUs;
-    for (int i = 0; i < *numCPUs; i++) {
-        ptr = &p_a->paths[i];
-        sprintf((char *) ptr, path_format, i);
-
-        printf("%p:", (void *) ptr);
-        //printf(ptr);
-        //printf(path_format, i);
-        printf("\n");
-    }
-}
-char * getPath(int cpu, path_array * p_a) {
-    char ** paths = p_a->paths;
-    return (char * ) paths + cpu;
-}
-
 
 int readConfig(SConfig *config) {
     FILE *fd = NULL;
@@ -59,15 +40,6 @@ int readConfig(SConfig *config) {
     strcpy((char*)config->thermalTempPath, (const char*)"/sys/class/thermal/thermal_zone0/temp");
     strcpy((char*)config->maxCpuFreqPath, (const char*)"/sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq");
     strcpy((char*)config->CSVPath, (const char*)"/tmp/autothrottle.csv");
-
-    // Expand the max_freq path in to a list of size [numcpus] proper paths
-    path_array pa;
-    setPaths((int *) &config->numCPUs, (char *) &config->maxCpuFreqPath, &pa);
-    config->path_arr = &pa;
-    for (int i=0; i<8; i++) {
-        printf(getPath(i, &pa));
-        printf("\n");
-    }
 
     fd = fopen("/etc/autothrottle.conf", "r");
     if (fd == NULL) {

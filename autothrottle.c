@@ -47,6 +47,7 @@ unsigned int getTemperature(void) {
 }
 
 
+
 unsigned int getMaxFreq(void) {
     unsigned int i = 0;
     char content[100];
@@ -55,16 +56,24 @@ unsigned int getMaxFreq(void) {
     FILE *fd = NULL;
     int read = 0;
 
-    fd = fopen((const char*) config.maxCpuFreqPath, "r");
+    char * path = config.maxCpuFreqPath;
+
+    char * path2 = alloca(sizeof(char)*M_PATH);
+    sprintf(path2, path, 0);
+    printf(path2);
+
+
+
+    fd = fopen(path2, "r");
     if (fd == NULL) {
-        syslog(LOG_ERR, "failed to open \"%s\" (%s)", config.maxCpuFreqPath, strerror(errno));
+        syslog(LOG_ERR, "failed to open \"%s\" (%s)", path2, strerror(errno));
         return 0;
     }
     memset(content, 0, 100);
     read = fread(content, sizeof(char), 99, fd);
 
     if (read == 0) {
-        syslog(LOG_ERR, "failed to read \"%s\" (%s)", config.maxCpuFreqPath, strerror(errno));
+        syslog(LOG_ERR, "failed to read \"%s\" (%s)", path2, strerror(errno));
         fclose(fd);
         return 0;
     }
@@ -116,17 +125,31 @@ unsigned int getTargetCpuFreq(unsigned int temp, unsigned int currFreq) {
     return (unsigned int) target;
 }
 
-int setCpuFreq(unsigned int targetFreq) {
-    FILE * fd = fopen(config.maxCpuFreqPath, "w");
+int setCpuFreq(char * path, unsigned int targetFreq) {
+    FILE * fd = fopen(path, "w");
 
     if (fd == NULL) {
-        syslog(LOG_ERR, "failed to open \"%s\" (%s)", config.maxCpuFreqPath, strerror(errno));
+        syslog(LOG_ERR, "failed to open \"%s\" (%s)", path, strerror(errno));
         return 1;
     }
     fprintf(fd, "%u", targetFreq);
     fclose(fd);
     return 0;
 
+}
+
+int setCpuFreqs(unsigned int targetFreq) {
+    char * path = alloca(sizeof(char)*M_PATH);
+    printf("%d\n", config.numCPUs);
+    for(int i=0; i<config.numCPUs; i++) {
+        sprintf(path, config.maxCpuFreqPath, i);
+        printf(path, config.maxCpuFreqPath, i);
+        printf("\n");
+        if (setCpuFreq(path, targetFreq) != 0) {
+            return 1;
+        }
+    }
+    return 0;
 }
 
 
@@ -205,7 +228,7 @@ int main(int argc, char** argv) {
         printf("maxfreq=%u\n", maxFreq);
         printf("target=%u\n", targFreq);
 
-        if (setCpuFreq(targFreq) != 0) {
+        if (setCpuFreqs(targFreq) != 0) {
             syslog(LOG_ERR, "cant set maximum frequency, terminating");
             break;
         }
