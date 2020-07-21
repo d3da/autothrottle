@@ -154,7 +154,7 @@ int setCpuFreqs(unsigned int targetFreq) {
 
 
 void writeCSV(FILE* fd, int i, unsigned int temp, unsigned int freq) {
-    fprintf(fd, "%i,%u,%u;\n", i, temp, freq);
+    fprintf(fd, "%i,%u,%u\n", i, temp, freq);
     fflush(fd);
 }
 
