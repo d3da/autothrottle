@@ -14,6 +14,7 @@ typedef struct {
 
 } SConfig;
 
+// struct for the PID controller to use
 typedef struct {
     long long I;
     unsigned int P;

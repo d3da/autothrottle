@@ -13,6 +13,10 @@ int allowedToRun = 1;
 PID pid_c;
 
 unsigned int getTemperature(void) {
+    /**
+     *  Read the content of the thermal path
+     *  TODO divide by 1000
+     */
     unsigned int i = 0;
     char content[100];
     unsigned int conlen = 0;
@@ -43,12 +47,17 @@ unsigned int getTemperature(void) {
             break;
         }
     }
-    return (unsigned int) strtol(ptr, NULL, 10);
+    return (unsigned int) strtol(ptr, NULL, 10) / 1000;
 }
 
 
 
 unsigned int getMaxFreq(void) {
+    /**
+     * Read the currently set max cpu frequency from disk
+     * This may be redundant, as were setting it ourselves,
+     * But it allows saving the max cpu freq from before the program was started
+     */
     unsigned int i = 0;
     char content[100];
     unsigned int conlen = 0;
@@ -60,7 +69,7 @@ unsigned int getMaxFreq(void) {
 
     char * path2 = alloca(sizeof(char)*M_PATH);
     sprintf(path2, path, 0);
-    printf(path2);
+    //printf(path2);
 
 
 
@@ -92,15 +101,17 @@ unsigned int getMaxFreq(void) {
 }
 
 unsigned int getTargetCpuFreq(unsigned int temp, unsigned int currFreq) {
-    /*
-     * Currently P-controller, should be tweaked PID-controller eventually
+    /**
+     * PID controller to calculate the new frequency based on the temperature and some internal vars
+     * TODO divide units by 1000
+     * TODO read hyperparameters from configuration file
      */
     long P = (long) ((long)temp - (long)config.targetTemp);
-    double kP = 50;
-    double kI = 0.03;
-    double kD = 275000;
-    double kA = 0.2;
-    if (pid_c.P == -1) pid_c.P = (int)temp;
+    double kP = 70;
+    double kI = 0.01;
+    double kD = 750000;
+    double kA = 100;
+    if (pid_c.P == -1) pid_c.P = (int)temp; // ensure derivative error is 0 on the first tick
     double derivative = (double) ((int)temp - (int)pid_c.P) / (int)config.pollingDelay;
 
     printf("P=%f\n", P*kP);
@@ -118,7 +129,7 @@ unsigned int getTargetCpuFreq(unsigned int temp, unsigned int currFreq) {
     printf("diff=%ld\n",diff);
     long target = currFreq - diff;
 
-    printf("err=%f\n", err);
+    //printf("err=%f\n", err);
     printf("target=%ld\n", target);
 
     if (target > config.maxMaxFreq) return config.maxMaxFreq;
@@ -127,6 +138,9 @@ unsigned int getTargetCpuFreq(unsigned int temp, unsigned int currFreq) {
 }
 
 int setCpuFreq(char * path, unsigned int targetFreq) {
+    /**
+     * use the kernels sysfs to set the max cpu frequency
+     */
     FILE * fd = fopen(path, "w");
 
     if (fd == NULL) {
@@ -140,12 +154,15 @@ int setCpuFreq(char * path, unsigned int targetFreq) {
 }
 
 int setCpuFreqs(unsigned int targetFreq) {
+    /**
+     * Call setCpuFreq for every cpu
+     */
     char * path = alloca(sizeof(char)*M_PATH);
-    printf("%d\n", config.numCPUs);
+    //printf("%d\n", config.numCPUs);
     for(int i=0; i<config.numCPUs; i++) {
         sprintf(path, config.maxCpuFreqPath, i);
-        printf(path, config.maxCpuFreqPath, i);
-        printf("\n");
+        //printf(path, config.maxCpuFreqPath, i);
+        //printf("\n");
         if (setCpuFreq(path, targetFreq) != 0) {
             return 1;
         }
@@ -155,12 +172,18 @@ int setCpuFreqs(unsigned int targetFreq) {
 
 
 void writeCSV(FILE* fd, int i, unsigned int temp, unsigned int freq) {
+    /**
+     * Write some nice data to a csv file (for graphs)
+     */
     fprintf(fd, "%i,%u,%u\n", i, temp, freq);
     fflush(fd);
 }
 
 
 void sighandler(int sig) {
+    /**
+     * ensure the program finishes one loop before terminating
+     */
     if (sig == SIGTERM) {
         allowedToRun = 0;
         return;
@@ -227,9 +250,12 @@ int main(int argc, char** argv) {
             break;
         }
         targFreq = getTargetCpuFreq(temp, maxFreq);
+
+        // printf statements are only seen when the program runs in --no-daemon mode
         printf("temperature=%u\n", temp);
         printf("maxfreq=%u\n", maxFreq);
         printf("target=%u\n", targFreq);
+        printf("\n");
 
         if (setCpuFreqs(targFreq) != 0) {
             syslog(LOG_ERR, "cant set maximum frequency, terminating");
@@ -246,4 +272,5 @@ int main(int argc, char** argv) {
         fclose(CSVfd);
     }
     syslog(LOG_NOTICE, "Stopping autothrottle");
+    return 0;
 }

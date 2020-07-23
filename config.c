@@ -7,6 +7,9 @@
 #include "defs.h"
 
 void stripPath(char * path) {
+    /**
+     * remove trailing newlines from path
+     */
     while (path[strlen((const char*)path) - 1] == '\n')
         path[strlen((const char*)path) - 1] = 0;
 }
@@ -14,6 +17,10 @@ void stripPath(char * path) {
 
 
 int readConfig(SConfig *config) {
+    /**
+     * read config from /etc/autothrottle.conf
+     * TODO refactor config path to allow setting with program arguments
+     */
     FILE *fd = NULL;
     char line[1024];
     char *ptr = NULL;
