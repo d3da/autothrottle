@@ -97,9 +97,10 @@ unsigned int getTargetCpuFreq(unsigned int temp, unsigned int currFreq) {
      */
     long P = (long) ((long)temp - (long)config.targetTemp);
     double kP = 50;
-    double kI = 0.02;
-    double kD = 250000;
+    double kI = 0.03;
+    double kD = 275000;
     double kA = 0.2;
+    if (pid_c.P == -1) pid_c.P = (int)temp;
     double derivative = (double) ((int)temp - (int)pid_c.P) / (int)config.pollingDelay;
 
     printf("P=%f\n", P*kP);
@@ -198,6 +199,8 @@ int main(int argc, char** argv) {
     unsigned int maxFreq = 0;
     unsigned int targFreq = 0;
     unsigned int i = 0;
+
+    pid_c.P = -1;
 
     FILE * CSVfd;
 
