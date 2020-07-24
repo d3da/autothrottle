@@ -8,8 +8,8 @@ typedef struct {
     char maxCpuFreqPath[M_PATH];
     unsigned int targetTemp;
     unsigned int verbosity;
-    int writeCSV;
-    int numCPUs;
+    unsigned int writeCSV;
+    unsigned int numCPUs;
     char CSVPath[M_PATH];
     double kP;
     double kI;

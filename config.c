@@ -122,7 +122,7 @@ int readConfig(SConfig *config) {
             ptr = line + 9;
             while (ptr[0] != '=') ptr++;
             ptr++;
-            config->writeCSV = (int) strtol(ptr, NULL, 10);
+            config->writeCSV = (unsigned int) strtoul(ptr, NULL, 10);
             if (config->writeCSV == 0)
                 printf("set CSV file writing to false\n");
             else
@@ -137,6 +137,14 @@ int readConfig(SConfig *config) {
             printf("set csv path to %s\n", config->CSVPath);
             continue;
         }
+        if (strncmp(line, "num_cpus", 8) == 0) {
+            ptr = line + 8;
+            while (ptr[0] != '=') ptr++;
+            ptr++;
+            config->numCPUs = (unsigned int) strtoul(ptr, NULL, 10);
+            printf("set num_cpus to %d\n", config->numCPUs);
+            continue;
+        }
 
         if (strncmp(line, "k_p", 3) == 0) {
             ptr = line + 3;
@@ -145,6 +153,7 @@ int readConfig(SConfig *config) {
             printf(ptr);
             config->kP = (double) strtod(ptr, NULL);
             printf("set kP to %e\n", config->kP);
+            continue;
         }
         if (strncmp(line, "k_i", 3) == 0) {
             ptr = line + 3;
@@ -152,6 +161,7 @@ int readConfig(SConfig *config) {
             ptr++;
             config->kI = (double) strtod(ptr, NULL);
             printf("set kI to %e\n", config->kI);
+            continue;
         }
 
         if (strncmp(line, "k_d", 3) == 0) {
@@ -160,6 +170,7 @@ int readConfig(SConfig *config) {
             ptr++;
             config->kD = (double) strtod(ptr, NULL);
             printf("set kD to %e\n", config->kD);
+            continue;
         }
         if (strncmp(line, "k_a", 3) == 0) {
             ptr = line + 3;
@@ -167,6 +178,7 @@ int readConfig(SConfig *config) {
             ptr++;
             config->kA = (double) strtod(ptr, NULL);
             printf("set kA to %e\n", config->kA);
+            continue;
         }
 
 
