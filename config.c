@@ -14,6 +14,40 @@ void stripPath(char * path) {
         path[strlen((const char*)path) - 1] = 0;
 }
 
+int readUInt(char * key, unsigned int * confVal, char * line) {
+    int len = strlen(key);
+    if (strncmp(line, key, len) != 0) return 1;
+    char * ptr = line + len;
+    while(ptr[0] != '=') ptr++;
+    ptr++;
+    *confVal = (unsigned int) strtoul(ptr, NULL, 10);
+    printf("set %s to %u\n", key, *confVal);
+    return 0;
+}
+
+int readPath(char * key, char * confVal, char * line) {
+    int len = strlen(key);
+    if (strncmp(line, key, len) != 0) return 1;
+    char * ptr = line + len;
+    while(ptr[0] != '/') ptr++;
+    strncpy(confVal, ptr, M_PATH);
+    stripPath(confVal);
+    printf("set %s to %s\n", key, confVal);
+    return 0;
+
+}
+
+int readDouble(char * key, double * confVal, char * line) {
+    int len = strlen(key);
+    if (strncmp(line, key, len) != 0) return 1;
+    char * ptr = line + len;
+    while(ptr[0] != '=') ptr++;
+    ptr++;
+    *confVal = (double) strtod(ptr, NULL);
+    printf("set %s to %e\n", key, *confVal);
+    return 0;
+
+}
 
 
 int readConfig(SConfig *config) {
@@ -23,7 +57,7 @@ int readConfig(SConfig *config) {
      */
     FILE *fd = NULL;
     char line[1024];
-    char *ptr = NULL;
+    //char *ptr = NULL;
     int currLine = 0;
 
     syslog(LOG_INFO, "reading configuration");
@@ -67,122 +101,21 @@ int readConfig(SConfig *config) {
         if (line[0] == '#' || line[0] == '\n' || line[0] == '\r')
             continue;
 
-        //TODO refactor this stuff nicely
-        if (strncmp(line, "max_freq", 8) == 0) {
-            ptr = line + 8;
-            while (ptr[0] != '=') ptr++;
-            ptr++;
-            config->maxMaxFreq = (unsigned int) strtoul(ptr, NULL, 10);
-            printf("set max freq to %u\n", config->maxMaxFreq);
-            continue;
-        }
+        if (readUInt("max_freq", &config->maxMaxFreq, line) == 0) continue;
+        if (readUInt("min_freq", &config->minMaxFreq, line) == 0) continue;
+        if (readUInt("delay", &config->pollingDelay, line) == 0) continue;
+        if (readUInt("target_temp", &config->targetTemp, line) == 0) continue;
+        if (readUInt("write_csv", &config->writeCSV, line) == 0) continue;
+        if (readUInt("num_cpus", &config->numCPUs, line) == 0) continue;
 
+        if (readPath("temp_path", (char *) config->thermalTempPath, line) == 0) continue;
+        if (readPath("cpufreq_path", (char *) config->maxCpuFreqPath, line) == 0) continue;
+        if (readPath("csv_path", (char *) config->CSVPath, line) == 0) continue;
 
-        if (strncmp(line, "min_freq", 8) == 0) {
-            ptr = line + 8;
-            while (ptr[0] != '=') ptr++;
-            ptr++;
-            config->minMaxFreq = (unsigned int) strtoul(ptr, NULL, 10);
-            printf("set min freq to %u\n", config->minMaxFreq);
-            continue;
-        }
-        if (strncmp(line, "delay", 5) == 0) {
-            ptr = line + 5;
-            while (ptr[0] != '=') ptr++;
-            ptr++;
-            config->pollingDelay = (unsigned int) strtoul(ptr, NULL, 10);
-            printf("set polling delay to %u\n", config->pollingDelay);
-            continue;
-        }
-        if (strncmp(line, "target_temp", 11) == 0) {
-            ptr = line + 11;
-            while (ptr[0] != '=') ptr++;
-            ptr++;
-            config->targetTemp = (unsigned int) strtoul(ptr, NULL, 10);
-            printf("set target temp to %u\n", config->targetTemp);
-            continue;
-        }
-        if (strncmp(line, "temp_path", 9) == 0) {
-            ptr = line + 9;
-            while (ptr[0] != '/') ptr++;
-            strncpy((char*)config->thermalTempPath, ptr, M_PATH);
-            stripPath(config->thermalTempPath);
-            printf("set temperature path to %s\n", config->thermalTempPath);
-            continue;
-        }
-        if (strncmp(line, "cpufreq_path", 12) == 0) {
-            ptr = line + 12;
-            while (ptr[0] != '/') ptr++;
-            strncpy((char*)config->maxCpuFreqPath, ptr, M_PATH);
-            stripPath(config->maxCpuFreqPath);
-            printf("set cpu frequency path to %s\n", config->maxCpuFreqPath);
-            continue;
-        }
-        if (strncmp(line, "write_csv", 9) == 0) {
-            ptr = line + 9;
-            while (ptr[0] != '=') ptr++;
-            ptr++;
-            config->writeCSV = (unsigned int) strtoul(ptr, NULL, 10);
-            if (config->writeCSV == 0)
-                printf("set CSV file writing to false\n");
-            else
-                printf("set CSV file writing to true\n");
-            continue;
-        }
-        if (strncmp(line, "csv_path", 8) == 0) {
-            ptr = line + 8;
-            while (ptr[0] != '/') ptr++;
-            strncpy((char *)config->CSVPath, ptr, M_PATH);
-            stripPath(config->CSVPath);
-            printf("set csv path to %s\n", config->CSVPath);
-            continue;
-        }
-        if (strncmp(line, "num_cpus", 8) == 0) {
-            ptr = line + 8;
-            while (ptr[0] != '=') ptr++;
-            ptr++;
-            config->numCPUs = (unsigned int) strtoul(ptr, NULL, 10);
-            printf("set num_cpus to %d\n", config->numCPUs);
-            continue;
-        }
-
-        if (strncmp(line, "k_p", 3) == 0) {
-            ptr = line + 3;
-            while (ptr[0] != '=') ptr++;
-            ptr++;
-            printf(ptr);
-            config->kP = (double) strtod(ptr, NULL);
-            printf("set kP to %e\n", config->kP);
-            continue;
-        }
-        if (strncmp(line, "k_i", 3) == 0) {
-            ptr = line + 3;
-            while (ptr[0] != '=') ptr++;
-            ptr++;
-            config->kI = (double) strtod(ptr, NULL);
-            printf("set kI to %e\n", config->kI);
-            continue;
-        }
-
-        if (strncmp(line, "k_d", 3) == 0) {
-            ptr = line + 3;
-            while (ptr[0] != '=') ptr++;
-            ptr++;
-            config->kD = (double) strtod(ptr, NULL);
-            printf("set kD to %e\n", config->kD);
-            continue;
-        }
-        if (strncmp(line, "k_a", 3) == 0) {
-            ptr = line + 3;
-            while (ptr[0] != '=') ptr++;
-            ptr++;
-            config->kA = (double) strtod(ptr, NULL);
-            printf("set kA to %e\n", config->kA);
-            continue;
-        }
-
-
-
+        if (readDouble("k_p", &config->kP, line) == 0) continue;
+        if (readDouble("k_i", &config->kI, line) == 0) continue;
+        if (readDouble("k_d", &config->kD, line) == 0) continue;
+        if (readDouble("k_a", &config->kA, line) == 0) continue;
     }
     syslog(LOG_NOTICE, "Found config file");
     fclose(fd);
