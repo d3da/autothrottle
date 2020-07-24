@@ -9,5 +9,5 @@ install:
 	cp -n autothrottle.conf /etc/
 
 clean:
-	rm autothrottle
+	rm  -f autothrottle
 
