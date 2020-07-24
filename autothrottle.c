@@ -96,7 +96,7 @@ unsigned int getMaxFreq(void) {
             break;
         }
     }
-    return (unsigned int) strtol(ptr, NULL, 10);
+    return (unsigned int) strtol(ptr, NULL, 10) / 1000;
 
 }
 
@@ -107,10 +107,11 @@ unsigned int getTargetCpuFreq(unsigned int temp, unsigned int currFreq) {
      * TODO read hyperparameters from configuration file
      */
     long P = (long) ((long)temp - (long)config.targetTemp);
-    double kP = 70;
-    double kI = 0.01;
-    double kD = 750000;
-    double kA = 100;
+    double kP = config.kP;
+    double kI = config.kI;
+    double kD = config.kD;
+    double kA = config.kA;
+
     if (pid_c.P == -1) pid_c.P = (int)temp; // ensure derivative error is 0 on the first tick
     double derivative = (double) ((int)temp - (int)pid_c.P) / (int)config.pollingDelay;
 
@@ -125,7 +126,7 @@ unsigned int getTargetCpuFreq(unsigned int temp, unsigned int currFreq) {
     if (pid_c.I < 0) pid_c.I = 0;
 
     double err = P * kP + derivative * kD + pid_c.I * kI;
-    long diff = err * kA;
+    long diff = (long) (err * kA * (config.pollingDelay));
     printf("diff=%ld\n",diff);
     long target = currFreq - diff;
 
@@ -142,6 +143,7 @@ int setCpuFreq(char * path, unsigned int targetFreq) {
      * use the kernels sysfs to set the max cpu frequency
      */
     FILE * fd = fopen(path, "w");
+    targetFreq = targetFreq * 1000;
 
     if (fd == NULL) {
         syslog(LOG_ERR, "failed to open \"%s\" (%s)", path, strerror(errno));

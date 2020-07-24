@@ -29,7 +29,7 @@ with open('/tmp/autothrottle.csv') as results_file:
             print(row[0], row[1], row[2])
             times.append(int(row[0]))
             temps.append(int(int(row[1])))
-            freqs.append(int(int(row[2])/1000))
+            freqs.append(int(int(row[2])))
         except:
             continue
     try:

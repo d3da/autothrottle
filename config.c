@@ -44,6 +44,10 @@ int readConfig(SConfig *config) {
     config->writeCSV = 1;
     config->CSVPath[0] = 0;
 
+    config->kP = 70;
+    config->kI = 0.01;
+    config->kD = 750000;
+    config->kA = 0.0001;
     strcpy((char*)config->thermalTempPath, (const char*)"/sys/class/thermal/thermal_zone0/temp");
     strcpy((char*)config->maxCpuFreqPath, (const char*)"/sys/devices/system/cpu/cpu%d/cpufreq/scaling_max_freq");
     strcpy((char*)config->CSVPath, (const char*)"/tmp/autothrottle.csv");
@@ -137,9 +141,16 @@ int readConfig(SConfig *config) {
     fclose(fd);
 
     // Sanity Checks
-    if (config->pollingDelay == 0) {
-        syslog(LOG_ERR, "delay value equals 0");
-        return 1;
+    if (config->pollingDelay < 500) {
+
+        if (config->pollingDelay == 0) {
+            syslog(LOG_ERR, "delay value equals 0");
+            return 1;
+        }
+        syslog(LOG_WARNING, "delay is very low. this can cause problems");
+    }
+    if (config->kP == 0 || config->kA == 0) {
+        syslog(LOG_ERR, "config.kP or config.kA is set to 0 or could not be read");
     }
 
     return 0;

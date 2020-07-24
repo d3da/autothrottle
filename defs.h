@@ -11,6 +11,10 @@ typedef struct {
     int writeCSV;
     int numCPUs;
     char CSVPath[M_PATH];
+    double kP;
+    double kI;
+    double kD;
+    double kA;
 
 } SConfig;
 
@@ -18,11 +22,4 @@ typedef struct {
 typedef struct {
     long long I;
     unsigned int P;
-    /* TODO allow configuring PID controller parameters without recompiling 
-    double kP;
-    double kI;
-    double kD;
-    double kA;
-    */
-    /* new_freq = old_freq + kA* (P*kP + I*kI + D*kD); */
 } PID;
