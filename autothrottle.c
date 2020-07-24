@@ -134,7 +134,13 @@ unsigned int getTargetCpuFreq(unsigned int temp, unsigned int currFreq) {
     printf("target=%ld\n", target);
 
     if (target > config.maxMaxFreq) return config.maxMaxFreq;
-    if (target < config.minMaxFreq) return config.minMaxFreq;
+    if (target < config.minMaxFreq) {
+
+        // temp higher than target, cpufreq minimal
+        if (P > 0) syslog(LOG_ALERT, "CPU temp too high!!! (%d C), autothrottle can not decrease the frequency further!!!", temp);
+
+        return config.minMaxFreq;
+    }
     return (unsigned int) target;
 }
 
