@@ -29,12 +29,12 @@ int readConfig(SConfig *config) {
     syslog(LOG_INFO, "reading configuration");
 
     // Set defaults
-    config->maxMaxFreq = 3500000;
-    config->minMaxFreq =  800000;
+    config->maxMaxFreq = 3500;
+    config->minMaxFreq =  800;
     config->pollingDelay = 1000;
     config->verbosity = 1; //TODO use
 
-    config->targetTemp = 80000;
+    config->targetTemp = 80;
 
     config->thermalTempPath[0] = 0;
     config->maxCpuFreqPath[0] = 0;
@@ -67,6 +67,7 @@ int readConfig(SConfig *config) {
         if (line[0] == '#' || line[0] == '\n' || line[0] == '\r')
             continue;
 
+        //TODO refactor this stuff nicely
         if (strncmp(line, "max_freq", 8) == 0) {
             ptr = line + 8;
             while (ptr[0] != '=') ptr++;
@@ -136,6 +137,40 @@ int readConfig(SConfig *config) {
             printf("set csv path to %s\n", config->CSVPath);
             continue;
         }
+
+        if (strncmp(line, "k_p", 3) == 0) {
+            ptr = line + 3;
+            while (ptr[0] != '=') ptr++;
+            ptr++;
+            printf(ptr);
+            config->kP = (double) strtod(ptr, NULL);
+            printf("set kP to %e\n", config->kP);
+        }
+        if (strncmp(line, "k_i", 3) == 0) {
+            ptr = line + 3;
+            while (ptr[0] != '=') ptr++;
+            ptr++;
+            config->kI = (double) strtod(ptr, NULL);
+            printf("set kI to %e\n", config->kI);
+        }
+
+        if (strncmp(line, "k_d", 3) == 0) {
+            ptr = line + 3;
+            while (ptr[0] != '=') ptr++;
+            ptr++;
+            config->kD = (double) strtod(ptr, NULL);
+            printf("set kD to %e\n", config->kD);
+        }
+        if (strncmp(line, "k_a", 3) == 0) {
+            ptr = line + 3;
+            while (ptr[0] != '=') ptr++;
+            ptr++;
+            config->kA = (double) strtod(ptr, NULL);
+            printf("set kA to %e\n", config->kA);
+        }
+
+
+
     }
     syslog(LOG_NOTICE, "Found config file");
     fclose(fd);
@@ -149,8 +184,16 @@ int readConfig(SConfig *config) {
         }
         syslog(LOG_WARNING, "delay is very low. this can cause problems");
     }
+
+    if (config->kD == 0 || config->kI == 0) {
+        syslog(LOG_WARNING, "config.kD or config.kI is set to 0 or could not be read");
+        syslog(LOG_WARNING, "this may be intended");
+    }
+
+
     if (config->kP == 0 || config->kA == 0) {
         syslog(LOG_ERR, "config.kP or config.kA is set to 0 or could not be read");
+        return 2;
     }
 
     return 0;
