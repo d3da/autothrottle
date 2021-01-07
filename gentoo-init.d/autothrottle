@@ -4,6 +4,6 @@
 
 name="autothrottle daemon"
 description="daemon that reduces the maximum cpu frequency to avoid overheating by d3da"
-command=/usr/local/bin/autothrottle
+command=autothrottle
 command_args="${autothrottle_args}"
 
