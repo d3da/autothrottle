@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+# 
+# TODO read target temp from autothrottle config
+
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 from cycler import cycler
